@@ -9,7 +9,7 @@
     "access": "public"
   },
   "bin": {
-    "skyaccess-mcp": "./bin/skyaccess-mcp.mjs"
+    "skyaccess-mcp": "bin/skyaccess-mcp.mjs"
   },
   "exports": {
     ".": "./src/cli.mjs"
