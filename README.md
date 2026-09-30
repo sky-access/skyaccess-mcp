@@ -1,122 +1,196 @@
-# skyaccess-mcp
+<img src="assets/icon.png" alt="SkyAccess" width="72" height="72">
 
-One command to add the SkyAccess private-jet MCP server to your AI client.
+# SkyAccess MCP server
+
+SkyAccess is the world's largest empty leg marketplace by listing volume. This free, public MCP server lets any AI assistant search 5,000+ live empty leg flights from 900+ FAA Part 135 (and international equivalent) certified charter operators, often 25 to 75% below a comparable full charter. It also returns indicative charter price estimates and a booking link the traveler can open.
+
+Use the hosted endpoint. Nothing needs to be installed.
+
+```text
+https://mcp.skyaccess.com/mcp
+```
+
+## Connection details
+
+| | |
+|---|---|
+| Endpoint | `https://mcp.skyaccess.com/mcp` |
+| Authentication | None. The server is free and anonymous: no account, sign-up, API key or OAuth. |
+| Transport | Streamable HTTP, `POST` only, stateless. No `Mcp-Session-Id` is issued, so every request stands alone. `GET` returns `405` by design. |
+| Required headers | `Content-Type: application/json` and `Accept: application/json, text/event-stream`. Any other `Accept` value (`*/*`, `application/json` alone, or none) returns `406`. |
+| Response format | Each reply is one Server-Sent Events message: `event: message`, then `data:` followed by the JSON-RPC response. |
+| Protocol version | `2025-06-18`. `2025-11-25` and `2025-03-26` are also negotiated. |
+| Rate limits | 30 requests per 60 seconds per client IP, and 10 charter enquiries (`request_booking`) per hour per client IP. See [Rate limits](#rate-limits). |
+| Coverage | Global inventory, most of it in the United States. Prices and estimates are in USD. |
+| Payments | None. No tool takes a payment or has a payment field. |
+| Support | contact@skyaccess.com |
+| Privacy policy | https://skyaccess.com/privacy |
+| Terms of service | https://skyaccess.com/terms |
+
+## Connect from an MCP client
+
+Any client that supports remote MCP servers over Streamable HTTP can use the endpoint directly. Leave authentication empty.
+
+- **Claude (claude.ai and Claude Desktop):** Settings, Connectors, Add custom connector, then paste `https://mcp.skyaccess.com/mcp`.
+- **Claude Code:**
+
+  ```bash
+  claude mcp add --transport http skyaccess https://mcp.skyaccess.com/mcp
+  ```
+
+- **Cursor:** add this to `~/.cursor/mcp.json`:
+
+  ```json
+  { "mcpServers": { "skyaccess": { "url": "https://mcp.skyaccess.com/mcp" } } }
+  ```
+
+- **Clients that only speak stdio** (for example Claude Desktop's `claude_desktop_config.json` file): use the bridge in this repository. See [Local installer and stdio bridge](#local-installer-and-stdio-bridge-npm-package-coming-soon).
+
+## Try it with curl
+
+List the tools:
 
 ```bash
-npx skyaccess-mcp
+curl -sS https://mcp.skyaccess.com/mcp \
+  -H 'Content-Type: application/json' \
+  -H 'Accept: application/json, text/event-stream' \
+  -d '{"jsonrpc":"2.0","id":1,"method":"tools/list"}'
 ```
 
-The server is public, anonymous, and read-mostly. It serves five tools:
-
-| Tool                   | Does                                                     |
-| ---------------------- | -------------------------------------------------------- |
-| `search_empty_legs`    | Find discounted empty-leg flights by route, date, pax    |
-| `get_flight`           | Re-read one leg by id                                    |
-| `booking_handoff`      | Get the customer-facing booking link for a leg           |
-| `get_charter_estimate` | Indicative price range for a charter route               |
-| `request_booking`      | Submit a charter enquiry (**the only tool that writes**) |
-
-Endpoint: `https://mcp.skyaccess.com/mcp`
-
-## Do you even need this package?
-
-Often not, and that is the honest answer. Checked against vendor docs on 2026-08-28:
-
-| Client                                      | Supports a remote URL natively? | What you actually do                                           |
-| ------------------------------------------- | ------------------------------- | -------------------------------------------------------------- |
-| **Claude.ai / Claude Desktop** (Connectors) | Yes                             | Settings → Connectors → Add custom connector → paste the URL   |
-| **Claude Code**                             | Yes                             | `claude mcp add --transport http --scope user skyaccess <url>` |
-| **Cursor**                                  | Yes                             | a `{ "url": ... }` entry in `~/.cursor/mcp.json`               |
-| **`claude_desktop_config.json`**            | **No — stdio only**             | needs a local process, i.e. the bridge in this package         |
-
-So this package does two things and nothing more:
-
-1. **Writes the config** for clients that take a remote URL, so you do not have to hand-edit JSON.
-2. **Ships a stdio↔HTTP bridge** for the one path that genuinely cannot take a URL —
-   Claude Desktop's config file, and any other stdio-only client.
-
-If you would rather paste a URL into a settings pane, do that. Nothing here is required.
-
-## Commands
+Search empty legs (read-only):
 
 ```bash
-npx skyaccess-mcp              # register with every supported client found on this machine
-npx skyaccess-mcp --dry-run    # show what would be written, write nothing
-npx skyaccess-mcp doctor       # check the endpoint and list its tools
-npx skyaccess-mcp bridge       # the stdio<->HTTP bridge (clients spawn this; not for humans)
+curl -sS https://mcp.skyaccess.com/mcp \
+  -H 'Content-Type: application/json' \
+  -H 'Accept: application/json, text/event-stream' \
+  -d '{"jsonrpc":"2.0","id":2,"method":"tools/call","params":{"name":"search_empty_legs","arguments":{"origin":"Los Angeles","destination":"Las Vegas","passengers":4}}}'
 ```
 
-Options: `--url <url>`, `--client <cursor|claude-desktop>`, `--dry-run`, `--help`.
+The server is stateless, so both commands work without an `initialize` handshake. MCP clients still send one, and the server answers it normally.
 
-`doctor` exits non-zero if the endpoint is unreachable or returns no tools, so it is usable in a
-script.
+## Tools
 
-## What gets written
+| Tool | Type | What it does |
+|---|---|---|
+| `search_empty_legs` | Read-only | Searches live empty leg flights by `origin`, `destination`, `departureDateFrom`, `departureDateTo`, `passengers` and `max_price` (USD), all optional. Returns up to 5 flights with route, departure time, all-in price, aircraft, seats, amenities, `flightId` and a booking link. |
+| `get_flight` | Read-only | Re-reads one flight by `flightId`, or says it is no longer available. |
+| `booking_handoff` | Read-only | Returns the SkyAccess booking page link for a `flightId`. It creates, holds or changes nothing; the traveler reviews and books on the page. |
+| `get_charter_estimate` | Read-only | Returns an indicative USD price range per aircraft category, with flight time, for a charter from `origin` to `destination` (optional `passengers` and `aircraftCategory`). |
+| `request_booking` | **Write** | Sends the traveler's name, email and trip details (`origin`, `destination`, `departureDate`, `passengers`, optional `notes`) to SkyAccess so a specialist can follow up by email to confirm availability and price. It takes no payment and creates no booking. |
 
-**Cursor** — `~/.cursor/mcp.json`, remote, no local process:
+A flight with `price: null` has no published price (SkyAccess shows it as "Contact for price"). Such flights can appear even when `max_price` is set, because their price is unknown.
 
-```json
-{ "mcpServers": { "skyaccess": { "url": "https://mcp.skyaccess.com/mcp" } } }
+Every tool carries MCP annotations: the four read-only tools set `readOnlyHint: true`, and `request_booking` sets `readOnlyHint: false`.
+
+## Example prompts
+
+1. "Find me a private jet from Los Angeles to Las Vegas this week for 4 people." (`search_empty_legs`)
+2. "Are there any cheap private jet flights from Miami to the Bahamas?" (`search_empty_legs`)
+3. "Show me empty legs from Teterboro to Palm Beach and give me the booking link for the cheapest one." (`search_empty_legs`, then `booking_handoff`)
+4. "How much would it cost to charter a private jet from Teterboro to Aspen for 6 people?" (`get_charter_estimate`)
+5. "What private jet deals are leaving Dallas this weekend?" (`search_empty_legs`)
+6. "Roughly what does a private jet from New York to London cost for 8 passengers?" (`get_charter_estimate`)
+
+Inventory changes all the time, so the flights returned differ from run to run.
+
+## Data and privacy
+
+The four read-only tools need no personal data. `request_booking` is the only tool that sends personal data: the name and email the traveler gives, plus the trip details and any notes, go to SkyAccess so a specialist can reply. Call it only when the traveler asks SkyAccess to contact them.
+
+How SkyAccess handles this data: https://skyaccess.com/privacy
+
+## Rate limits
+
+Current limits, per client IP:
+
+- **30 requests per 60 seconds.** Every `POST` counts, including `initialize`, `notifications/initialized`, `tools/list` and `ping`, so a client typically spends about 4 requests on its first tool call. Every response carries `RateLimit-Policy: 30;w=60`, `RateLimit-Limit`, `RateLimit-Remaining` and `RateLimit-Reset` headers.
+- **10 charter enquiries per hour.** Only requests that call `request_booking` count toward this limit.
+- **Per request:** a JSON-RPC batch may carry at most 4 tool calls, and at most 1 `request_booking` call. Larger batches return `400`.
+
+Over a limit, the server answers HTTP `429` with JSON-RPC error code `-32029`. The `RateLimit-Reset` header gives the seconds until the window resets; retry after that.
+
+## Troubleshooting
+
+| Symptom | Cause and fix |
+|---|---|
+| `406 Not Acceptable` | The `Accept` header must list both `application/json` and `text/event-stream`. Send `Accept: application/json, text/event-stream`. |
+| `429`, JSON-RPC error `-32029` | A rate limit was reached. "Max 30 requests per minute" is the general limit; "Max 10 booking submissions per hour" is the `request_booking` limit. Wait `RateLimit-Reset` seconds, then retry. |
+| `405` | The request was a `GET`. Send JSON-RPC over `POST`. |
+| `400` "Only one request_booking call is allowed per request" or "At most 4 tool calls are allowed per request" | Split the JSON-RPC batch into smaller requests. |
+| "No published empty leg flight matches that id." | The flight is no longer published (booked, withdrawn or departed), or the id is wrong. Run `search_empty_legs` again. |
+| `get_charter_estimate` answers "Estimate temporarily unavailable. Please try again." | The same message is returned when a place name is not recognised. Retry with a major city name or an airport code such as `KTEB`. |
+
+## Local installer and stdio bridge (npm package coming soon)
+
+The `skyaccess-mcp` npm package is not published yet, so `npx skyaccess-mcp` does not work today. Use the hosted endpoint above. Once published, the package will:
+
+1. Write the SkyAccess entry into the config of supported MCP clients found on the machine (Cursor and the Claude Desktop config file), so nobody has to hand-edit JSON.
+2. Provide a stdio to HTTP bridge for clients that cannot take a URL.
+
+### Run it from a clone today
+
+The connectivity check and the bridge already work from a clone of this repository. They need Node 20 or later and no dependencies:
+
+```bash
+git clone https://github.com/sky-access/skyaccess-mcp.git
+cd skyaccess-mcp
+node bin/skyaccess-mcp.mjs doctor
 ```
 
-**Claude Desktop config file** — stdio, because that file rejects a `url`:
+`doctor` checks the endpoint and lists its tools. It exits non-zero if the endpoint is unreachable or returns no tools.
+
+To use the bridge with a stdio-only client such as Claude Desktop's `claude_desktop_config.json`, point it at the absolute path of your clone:
 
 ```json
 {
   "mcpServers": {
     "skyaccess": {
-      "command": "npx",
-      "args": ["-y", "skyaccess-mcp", "bridge", "--url", "https://mcp.skyaccess.com/mcp"]
+      "command": "node",
+      "args": ["/absolute/path/to/skyaccess-mcp/bin/skyaccess-mcp.mjs", "bridge"]
     }
   }
 }
 ```
 
-Safety rules the installer follows:
+Do not run the installer itself (`node bin/skyaccess-mcp.mjs` with no command) from a clone yet. The Claude Desktop entry it writes starts the bridge through `npx -y skyaccess-mcp`, which fails until the package is published.
 
-- A client is only written to if its own directory already exists — running this will not create
-  `~/.cursor` on a machine with no Cursor.
-- Every other key in the file is preserved; your other MCP servers survive verbatim.
-- A config that does not parse as JSON is **left untouched** and reported, never overwritten.
-- An existing entry is backed up to `<config>.skyaccess-backup` before it is replaced.
+### Commands once the package is published
 
-## Design notes
-
-- **Zero runtime dependencies.** `npx` downloads exactly this package and nothing else, so there
-  is no transitive supply chain to audit for a one-shot installer. Node 20+ only.
-- **Plain ESM, no build step.** What is published is what is in `src/`.
-- The bridge writes **only** JSON-RPC to stdout, one message per line; every diagnostic goes to
-  stderr. A stray stdout write corrupts the protocol.
-- A notification answered with `202` produces no stdout line — synthesising a reply the client
-  never asked for is a protocol violation.
-- A failed HTTP hop for a request is turned into a JSON-RPC error carrying the same `id`, so the
-  client fails fast instead of hanging forever.
-
-## Tests
+These are not available yet:
 
 ```bash
-pnpm --filter skyaccess-mcp test        # offline: real local http server, no network
-pnpm --filter skyaccess-mcp test:live   # hits https://mcp.skyaccess.com/mcp
+npx skyaccess-mcp              # register with every supported client found on this machine
+npx skyaccess-mcp --dry-run    # show what would be written, write nothing
+npx skyaccess-mcp doctor       # check the endpoint and list its tools
+npx skyaccess-mcp bridge       # the stdio to HTTP bridge (clients spawn this)
 ```
 
-The live suite is opt-in (`SKYACCESS_MCP_LIVE=1`) and deliberately outside the CI gate: it
-depends on DNS, the public internet and a 30-req/min rate limit, none of which say anything about
-whether this code is correct.
+Options: `--url <url>`, `--client <cursor|claude-desktop>`, `--dry-run`, `--help`.
 
-## Publishing
+### How the installer treats your config files
 
-⚠️ **Not published yet.** `registry.npmjs.org/skyaccess-mcp` is a 404 and the name is unclaimed.
-This is also the first non-private package in this monorepo — everything else is `private: true`.
+- It only writes to a client whose own directory already exists, so it never creates `~/.cursor` on a machine without Cursor.
+- It keeps every other key in the file, so your other MCP servers stay as they are.
+- It leaves a config that does not parse as JSON untouched and reports it; it never overwrites one.
+- It backs up an existing SkyAccess entry to `<config>.skyaccess-backup` before replacing it.
 
-To publish (requires an npm account with rights to the name):
+### Design notes
+
+- **No runtime dependencies**, so there is no transitive supply chain to audit. Plain ESM with no build step: what ships is what is in `src/`.
+- The bridge writes **only** JSON-RPC to stdout, one message per line, and sends every diagnostic to stderr. A stray stdout write would corrupt the protocol.
+- A notification answered with `202` produces no stdout line, because a reply the client never asked for is a protocol violation.
+- A failed HTTP hop for a request becomes a JSON-RPC error with the same `id`, so the client fails fast instead of waiting forever.
+
+## Development
 
 ```bash
-cd packages/skyaccess-mcp
-npm publish --access public     # publishConfig.access is already set to public
+npm install          # installs vitest, the only dev dependency
+npm test             # offline suite against a real local HTTP server, no network
+npm run test:live    # opt-in live suite against https://mcp.skyaccess.com/mcp
 ```
 
-Then verify the real path a user takes:
+The live suite only sends `initialize` and `tools/list`. It is kept out of `npm test` because it depends on DNS, the public internet and the rate limit above, none of which say anything about whether the code is correct.
 
-```bash
-npx -y skyaccess-mcp@latest doctor
-```
+## License
+
+MIT. See [LICENSE](LICENSE).

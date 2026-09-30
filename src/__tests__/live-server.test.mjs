@@ -8,13 +8,12 @@ import { probe } from "../doctor.mjs";
 
 /**
  * Hits the REAL public endpoint. Opt-in with `SKYACCESS_MCP_LIVE=1`
- * (`pnpm --filter skyaccess-mcp test:live`).
+ * (`npm run test:live`).
  *
- * ⛔ Deliberately NOT part of the CI gate. `.github/test-baseline.json` holds this
- * package at 0 failures, and a suite that depends on DNS, the internet and a
- * 30-req/min rate limit would turn any of those into a red release gate that has
- * nothing to say about the code. The file still sits inside the vitest `include`
- * so `scripts/ci/verify-vitest-include.mjs` can see it; it reports as skipped.
+ * Deliberately NOT part of the default `npm test` run: a suite that depends on
+ * DNS, the internet and a 30-req/min rate limit would fail for reasons that say
+ * nothing about the code. The file still sits inside the vitest `include`, so
+ * `npm test` lists it as skipped.
  */
 const LIVE = process.env.SKYACCESS_MCP_LIVE === "1";
 

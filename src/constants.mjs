@@ -1,9 +1,8 @@
 /**
  * Shared constants for the `skyaccess-mcp` installer/bridge.
  *
- * `mcp.skyaccess.com` is the vanity host and it resolves (verified 2026-08-28);
- * `api.skyaccess.com/mcp` is the same server behind its API hostname and is the
- * fallback documented in apps/web/app/llms.txt/route.ts. Both answer `initialize`.
+ * `https://mcp.skyaccess.com/mcp` is the public, anonymous SkyAccess MCP
+ * endpoint and the only URL clients should be configured with.
  */
 
 /** The public, anonymous SkyAccess MCP endpoint. Overridable with --url. */
