@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "Add the SkyAccess private jet charter MCP server to Claude, Cursor, or any MCP client with one command.",
   "license": "MIT",
+  "author": "SkyAccess Inc.",
   "type": "module",
   "private": false,
   "publishConfig": {

@@ -17,14 +17,14 @@ https://mcp.skyaccess.com/mcp
 | Endpoint | `https://mcp.skyaccess.com/mcp` |
 | Authentication | None. The server is free and anonymous: no account, sign-up, API key or OAuth. |
 | Transport | Streamable HTTP, `POST` only, stateless. No `Mcp-Session-Id` is issued, so every request stands alone. `GET` returns `405` by design. |
-| Required headers | `Content-Type: application/json` and `Accept: application/json, text/event-stream`. Any other `Accept` value (`*/*`, `application/json` alone, or none) returns `406`. |
-| Response format | Each reply is one Server-Sent Events message: `event: message`, then `data:` followed by the JSON-RPC response. |
-| Protocol version | `2025-06-18`. `2025-11-25` and `2025-03-26` are also negotiated. |
-| Rate limits | 30 requests per 60 seconds per client IP, and 10 charter enquiries (`request_booking`) per hour per client IP. See [Rate limits](#rate-limits). |
+| Required headers | `Content-Type: application/json`. `Accept` can be the MCP spec value `application/json, text/event-stream`, `application/json` alone, `*/*`, or left out. An `Accept` value that does not list `application/json` and is not just `*/*` (for example `text/html` or `text/event-stream` alone) returns `406`. |
+| Response format | With `Accept: application/json, text/event-stream`, each reply is one Server-Sent Events message: `event: message`, then `data:` followed by the JSON-RPC response. With `application/json` alone, `*/*` or no `Accept` header, each reply is plain JSON (`Content-Type: application/json`). |
+| Protocol version | `2025-06-18`. `2025-11-25`, `2025-03-26` and `2024-11-05` are also negotiated. |
+| Rate limits | Tool calls: 30 requests per 60 seconds per client IP. Connection setup is not counted. `request_booking`: 10 charter enquiries per hour per client IP. See [Rate limits](#rate-limits). |
 | Coverage | Global inventory, most of it in the United States. Prices and estimates are in USD. |
 | Payments | None. No tool takes a payment or has a payment field. |
 | Support | contact@skyaccess.com |
-| Privacy policy | https://skyaccess.com/privacy |
+| Privacy policy | https://skyaccess.com/privacy#connector |
 | Terms of service | https://skyaccess.com/terms |
 
 ## Connect from an MCP client
@@ -76,7 +76,7 @@ The server is stateless, so both commands work without an `initialize` handshake
 | `get_flight` | Read-only | Re-reads one flight by `flightId`, or says it is no longer available. |
 | `booking_handoff` | Read-only | Returns the SkyAccess booking page link for a `flightId`. It creates, holds or changes nothing; the traveler reviews and books on the page. |
 | `get_charter_estimate` | Read-only | Returns an indicative USD price range per aircraft category, with flight time, for a charter from `origin` to `destination` (optional `passengers` and `aircraftCategory`). |
-| `request_booking` | **Write** | Sends the traveler's name, email and trip details (`origin`, `destination`, `departureDate`, `passengers`, optional `notes`) to SkyAccess so a specialist can follow up by email to confirm availability and price. It takes no payment and creates no booking. |
+| `request_booking` | **Write** | Sends the traveler's name, email and trip details (`origin`, `destination`, `departureDate`, `passengers`, optional `notes`) to SkyAccess. A SkyAccess specialist follows up by email shortly to confirm availability and price. It takes no payment and creates no booking. |
 
 A flight with `price: null` has no published price (SkyAccess shows it as "Contact for price"). Such flights can appear even when `max_price` is set, because their price is unknown.
 
@@ -97,13 +97,13 @@ Inventory changes all the time, so the flights returned differ from run to run.
 
 The four read-only tools need no personal data. `request_booking` is the only tool that sends personal data: the name and email the traveler gives, plus the trip details and any notes, go to SkyAccess so a specialist can reply. Call it only when the traveler asks SkyAccess to contact them.
 
-How SkyAccess handles this data: https://skyaccess.com/privacy
+How SkyAccess handles this data: https://skyaccess.com/privacy#connector
 
 ## Rate limits
 
 Current limits, per client IP:
 
-- **30 requests per 60 seconds.** Every `POST` counts, including `initialize`, `notifications/initialized`, `tools/list` and `ping`, so a client typically spends about 4 requests on its first tool call. Every response carries `RateLimit-Policy: 30;w=60`, `RateLimit-Limit`, `RateLimit-Remaining` and `RateLimit-Reset` headers.
+- **Tool calls: 30 requests per 60 seconds.** Each request that carries a `tools/call` counts once. Connection setup is not counted: `initialize`, `notifications/initialized`, `notifications/cancelled`, `tools/list`, `ping`, and the `GET` an MCP client sends to open the optional SSE stream (answered `405`). A typical client turn (connect, list tools, call one tool) therefore spends 1 request. Any other method counts, and so does a setup request that is over 8 KB, chunked or compressed, or a batch that repeats a setup method. Counted tool-call responses carry `RateLimit-Policy: 30;w=60`, `RateLimit-Limit`, `RateLimit-Remaining` and `RateLimit-Reset` headers (a `request_booking` response carries the hourly limit's values instead); setup responses carry none.
 - **10 charter enquiries per hour.** Only requests that call `request_booking` count toward this limit.
 - **Per request:** a JSON-RPC batch may carry at most 4 tool calls, and at most 1 `request_booking` call. Larger batches return `400`.
 
@@ -113,9 +113,9 @@ Over a limit, the server answers HTTP `429` with JSON-RPC error code `-32029`. T
 
 | Symptom | Cause and fix |
 |---|---|
-| `406 Not Acceptable` | The `Accept` header must list both `application/json` and `text/event-stream`. Send `Accept: application/json, text/event-stream`. |
-| `429`, JSON-RPC error `-32029` | A rate limit was reached. "Max 30 requests per minute" is the general limit; "Max 10 booking submissions per hour" is the `request_booking` limit. Wait `RateLimit-Reset` seconds, then retry. |
-| `405` | The request was a `GET`. Send JSON-RPC over `POST`. |
+| `406 Not Acceptable` | The `Accept` header does not list `application/json` and is not just `*/*` (for example `text/html` or `text/event-stream` alone). Send `Accept: application/json, text/event-stream`, `application/json` or `*/*`, or leave `Accept` out. |
+| `429`, JSON-RPC error `-32029` | A rate limit was reached. "Max 30 requests per minute" is the tool-call limit (connection setup does not count toward it); "Max 10 booking submissions per hour" is the `request_booking` limit. Wait `RateLimit-Reset` seconds, then retry. |
+| `405` | The request was a `GET`. Send JSON-RPC over `POST`. MCP clients send one `GET` to open an optional SSE stream and read the `405` as "no stream offered"; that is expected and does not count toward the rate limit. |
 | `400` "Only one request_booking call is allowed per request" or "At most 4 tool calls are allowed per request" | Split the JSON-RPC batch into smaller requests. |
 | "No published empty leg flight matches that id." | The flight is no longer published (booked, withdrawn or departed), or the id is wrong. Run `search_empty_legs` again. |
 | `get_charter_estimate` answers "Estimate temporarily unavailable. Please try again." | The same message is returned when a place name is not recognised. Retry with a major city name or an airport code such as `KTEB`. |
@@ -189,7 +189,7 @@ npm test             # offline suite against a real local HTTP server, no networ
 npm run test:live    # opt-in live suite against https://mcp.skyaccess.com/mcp
 ```
 
-The live suite only sends `initialize` and `tools/list`. It is kept out of `npm test` because it depends on DNS, the public internet and the rate limit above, none of which say anything about whether the code is correct.
+The live suite only sends `initialize` and `tools/list`. It is kept out of `npm test` because it depends on DNS and the public internet, neither of which says anything about whether the code is correct.
 
 ## License
 
