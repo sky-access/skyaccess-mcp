@@ -19,7 +19,7 @@ https://mcp.skyaccess.com/mcp
 | Transport | Streamable HTTP, `POST` only, stateless. No `Mcp-Session-Id` is issued, so every request stands alone. `GET` returns `405` by design. |
 | Required headers | `Content-Type: application/json`. `Accept` can be the MCP spec value `application/json, text/event-stream`, `application/json` alone, `*/*`, or left out. An `Accept` value that does not list `application/json` and is not just `*/*` (for example `text/html` or `text/event-stream` alone) returns `406`. |
 | Response format | With `Accept: application/json, text/event-stream`, each reply is one Server-Sent Events message: `event: message`, then `data:` followed by the JSON-RPC response. With `application/json` alone, `*/*` or no `Accept` header, each reply is plain JSON (`Content-Type: application/json`). |
-| Protocol version | `2025-06-18`. `2025-11-25` and `2025-03-26` are also negotiated. |
+| Protocol version | `2025-06-18`. `2025-11-25`, `2025-03-26` and `2024-11-05` are also negotiated. |
 | Rate limits | Tool calls: 30 requests per 60 seconds per client IP. Connection setup is not counted. `request_booking`: 10 charter enquiries per hour per client IP. See [Rate limits](#rate-limits). |
 | Coverage | Global inventory, most of it in the United States. Prices and estimates are in USD. |
 | Payments | None. No tool takes a payment or has a payment field. |
@@ -103,7 +103,7 @@ How SkyAccess handles this data: https://skyaccess.com/privacy#connector
 
 Current limits, per client IP:
 
-- **Tool calls: 30 requests per 60 seconds.** Each request that carries a `tools/call` counts once. Connection setup is not counted: `initialize`, `notifications/initialized`, `notifications/cancelled`, `tools/list`, `ping`, and the `GET` an MCP client sends to open the optional SSE stream (answered `405`). A typical client turn (connect, list tools, call one tool) therefore spends 1 request. Any other method counts, and so does a setup request that is over 8 KB, chunked or compressed. Counted responses carry `RateLimit-Policy: 30;w=60`, `RateLimit-Limit`, `RateLimit-Remaining` and `RateLimit-Reset` headers; setup responses carry none.
+- **Tool calls: 30 requests per 60 seconds.** Each request that carries a `tools/call` counts once. Connection setup is not counted: `initialize`, `notifications/initialized`, `notifications/cancelled`, `tools/list`, `ping`, and the `GET` an MCP client sends to open the optional SSE stream (answered `405`). A typical client turn (connect, list tools, call one tool) therefore spends 1 request. Any other method counts, and so does a setup request that is over 8 KB, chunked or compressed, or a batch that repeats a setup method. Counted tool-call responses carry `RateLimit-Policy: 30;w=60`, `RateLimit-Limit`, `RateLimit-Remaining` and `RateLimit-Reset` headers (a `request_booking` response carries the hourly limit's values instead); setup responses carry none.
 - **10 charter enquiries per hour.** Only requests that call `request_booking` count toward this limit.
 - **Per request:** a JSON-RPC batch may carry at most 4 tool calls, and at most 1 `request_booking` call. Larger batches return `400`.
 
@@ -189,7 +189,7 @@ npm test             # offline suite against a real local HTTP server, no networ
 npm run test:live    # opt-in live suite against https://mcp.skyaccess.com/mcp
 ```
 
-The live suite only sends `initialize` and `tools/list`. It is kept out of `npm test` because it depends on DNS, the public internet and the rate limit above, none of which say anything about whether the code is correct.
+The live suite only sends `initialize` and `tools/list`. It is kept out of `npm test` because it depends on DNS and the public internet, neither of which says anything about whether the code is correct.
 
 ## License
 
