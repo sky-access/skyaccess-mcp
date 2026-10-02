@@ -72,7 +72,7 @@ The server is stateless, so both commands work without an `initialize` handshake
 
 | Tool | Type | What it does |
 |---|---|---|
-| `search_empty_legs` | Read-only | Searches live empty leg flights by `origin`, `destination`, `departureDateFrom`, `departureDateTo`, `passengers` and `max_price` (USD), all optional. Returns up to 5 flights with route, departure time, all-in price, aircraft, seats, amenities, `flightId` and a booking link. |
+| `search_empty_legs` | Read-only | Searches live empty leg flights by `origin`, `destination`, `departureDateFrom`, `departureDateTo`, `passengers` and `max_price` (USD), all optional. Returns up to 5 flights with route, departure time, whole-aircraft price (taxes and fees shown at checkout), aircraft, seats, amenities, `flightId` and a booking link. |
 | `get_flight` | Read-only | Re-reads one flight by `flightId`, or says it is no longer available. |
 | `booking_handoff` | Read-only | Returns the SkyAccess booking page link for a `flightId`. It creates, holds or changes nothing; the traveler reviews and books on the page. |
 | `get_charter_estimate` | Read-only | Returns an indicative USD price range per aircraft category, with flight time, for a charter from `origin` to `destination` (optional `passengers` and `aircraftCategory`). |
