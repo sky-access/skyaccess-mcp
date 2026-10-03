@@ -1,0 +1,11 @@
+{
+  "name": "skyaccess",
+  "version": "1.0.2",
+  "description": "Private jet empty legs from SkyAccess: search 5,000+ live empty leg flights, get indicative charter price estimates and booking links. Hosted MCP server, no account or API key.",
+  "mcpServers": {
+    "skyaccess": {
+      "httpUrl": "https://mcp.skyaccess.com/mcp"
+    }
+  },
+  "contextFileName": "GEMINI.md"
+}

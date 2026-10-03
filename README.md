@@ -10,6 +10,40 @@ Use the hosted endpoint. Nothing needs to be installed.
 https://mcp.skyaccess.com/mcp
 ```
 
+## Install
+
+Each option below adds the hosted endpoint to your client. Nothing runs on your machine, and there is no account, sign-up or API key.
+
+[![Install in VS Code](https://img.shields.io/badge/VS_Code-Install_SkyAccess-0098FF?style=flat-square&logo=visualstudiocode&logoColor=white)](https://vscode.dev/redirect/mcp/install?name=skyaccess&config=%7B%22type%22%3A%22http%22%2C%22url%22%3A%22https%3A%2F%2Fmcp.skyaccess.com%2Fmcp%22%7D)
+[![Install in VS Code Insiders](https://img.shields.io/badge/VS_Code_Insiders-Install_SkyAccess-24bfa5?style=flat-square&logo=visualstudiocode&logoColor=white)](https://insiders.vscode.dev/redirect/mcp/install?name=skyaccess&config=%7B%22type%22%3A%22http%22%2C%22url%22%3A%22https%3A%2F%2Fmcp.skyaccess.com%2Fmcp%22%7D&quality=insiders)
+
+- **Claude Code:**
+
+  ```bash
+  claude mcp add --transport http skyaccess https://mcp.skyaccess.com/mcp
+  ```
+
+- **Claude Code plugin** (the same server, plus a skill that tells Claude when to use each tool):
+
+  ```bash
+  claude plugin marketplace add sky-access/skyaccess-mcp
+  claude plugin install skyaccess@skyaccess
+  ```
+
+- **Gemini CLI:**
+
+  ```bash
+  gemini extensions install https://github.com/sky-access/skyaccess-mcp
+  ```
+
+- **VS Code (GitHub Copilot):** use a button above, or run:
+
+  ```bash
+  code --add-mcp '{"name":"skyaccess","type":"http","url":"https://mcp.skyaccess.com/mcp"}'
+  ```
+
+- **Claude (claude.ai and Claude Desktop), Cursor and other clients:** see [Connect from an MCP client](#connect-from-an-mcp-client).
+
 ## Connection details
 
 | | |
@@ -32,16 +66,17 @@ https://mcp.skyaccess.com/mcp
 Any client that supports remote MCP servers over Streamable HTTP can use the endpoint directly. Leave authentication empty.
 
 - **Claude (claude.ai and Claude Desktop):** Settings, Connectors, Add custom connector, then paste `https://mcp.skyaccess.com/mcp`.
-- **Claude Code:**
-
-  ```bash
-  claude mcp add --transport http skyaccess https://mcp.skyaccess.com/mcp
-  ```
-
+- **Claude Code, Gemini CLI and VS Code:** see [Install](#install).
 - **Cursor:** add this to `~/.cursor/mcp.json`:
 
   ```json
   { "mcpServers": { "skyaccess": { "url": "https://mcp.skyaccess.com/mcp" } } }
+  ```
+
+- **VS Code, by hand:** add this to `.vscode/mcp.json` in your workspace:
+
+  ```json
+  { "servers": { "skyaccess": { "type": "http", "url": "https://mcp.skyaccess.com/mcp" } } }
   ```
 
 - **Clients that only speak stdio** (for example Claude Desktop's `claude_desktop_config.json` file): use the bridge in this repository. See [Local installer and stdio bridge](#local-installer-and-stdio-bridge-npm-package-coming-soon).
@@ -190,6 +225,18 @@ npm run test:live    # opt-in live suite against https://mcp.skyaccess.com/mcp
 ```
 
 The live suite only sends `initialize` and `tools/list`. It is kept out of `npm test` because it depends on DNS and the public internet, neither of which says anything about whether the code is correct.
+
+### Listing manifests
+
+These files point each client at the hosted endpoint. None of them runs code.
+
+| File | Used by |
+|---|---|
+| `gemini-extension.json`, `GEMINI.md` | Gemini CLI extension (`gemini extensions install`) and the Gemini CLI extensions gallery |
+| `.claude-plugin/marketplace.json` | Claude Code plugin marketplace (`claude plugin marketplace add sky-access/skyaccess-mcp`) |
+| `plugins/skyaccess/` | The Claude Code plugin itself: `.claude-plugin/plugin.json`, `.mcp.json`, the `empty-legs` skill and its README |
+
+When the server version changes, bump `version` in `gemini-extension.json` and in `plugins/skyaccess/.claude-plugin/plugin.json` together. Check the Claude Code files with `claude plugin validate .` and `claude plugin validate ./plugins/skyaccess`, and the Gemini extension with `gemini extensions validate .`.
 
 ## License
 
