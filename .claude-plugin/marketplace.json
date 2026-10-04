@@ -1,0 +1,19 @@
+{
+  "name": "skyaccess",
+  "description": "SkyAccess plugins for Claude Code: private jet empty leg search, charter price estimates and booking links.",
+  "owner": {
+    "name": "SkyAccess Inc.",
+    "email": "contact@skyaccess.com",
+    "url": "https://skyaccess.com"
+  },
+  "plugins": [
+    {
+      "name": "skyaccess",
+      "source": "./plugins/skyaccess",
+      "description": "Search live private jet empty legs, get indicative charter price estimates and booking links through the hosted SkyAccess MCP server.",
+      "category": "travel",
+      "tags": ["travel", "private-jet", "empty-legs", "charter", "flights"],
+      "homepage": "https://skyaccess.com"
+    }
+  ]
+}
