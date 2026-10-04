@@ -36,6 +36,8 @@ Each option below adds the hosted endpoint to your client. Nothing runs on your 
   gemini extensions install https://github.com/sky-access/skyaccess-mcp
   ```
 
+- **Kiro power** (the same server, plus a skill that tells the Kiro agent when to use each tool): in the Powers panel choose **Add Custom Power**, then **Import power from GitHub**, and enter `https://github.com/sky-access/skyaccess-mcp`. See [`powers/skyaccess`](powers/skyaccess).
+
 - **VS Code (GitHub Copilot):** use a button above, or run:
 
   ```bash
@@ -221,8 +223,9 @@ These files point each client at the hosted endpoint. None of them runs code.
 | `gemini-extension.json`, `GEMINI.md` | Gemini CLI extension (`gemini extensions install`) and the Gemini CLI extensions gallery |
 | `.claude-plugin/marketplace.json` | Claude Code plugin marketplace (`claude plugin marketplace add sky-access/skyaccess-mcp`) |
 | `plugins/skyaccess/` | The Claude Code plugin itself: `.claude-plugin/plugin.json`, `.mcp.json`, the `empty-legs` skill and its README |
+| `powers/skyaccess/` | Kiro power in the Agent Plugins format: `plugin.json`, `mcp.json`, the `empty-legs` skill and its README |
 
-When the server version changes, bump `version` in `gemini-extension.json` and in `plugins/skyaccess/.claude-plugin/plugin.json` together. Check the Claude Code files with `claude plugin validate .` and `claude plugin validate ./plugins/skyaccess`, and the Gemini extension with `gemini extensions validate .`.
+When the server version changes, bump `version` in `gemini-extension.json`, in `plugins/skyaccess/.claude-plugin/plugin.json` and in `powers/skyaccess/plugin.json` together. Check the Claude Code files with `claude plugin validate .` and `claude plugin validate ./plugins/skyaccess`, and the Gemini extension with `gemini extensions validate .`.
 
 ## License
 

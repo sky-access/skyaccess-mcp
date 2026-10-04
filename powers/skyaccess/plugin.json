@@ -1,0 +1,23 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
+  "name": "skyaccess",
+  "version": "1.0.2",
+  "description": "Search 5,000+ live empty leg flights, get charter price estimates and booking links. No account or API key.",
+  "author": {
+    "name": "SkyAccess Inc.",
+    "email": "contact@skyaccess.com",
+    "url": "https://skyaccess.com"
+  },
+  "homepage": "https://skyaccess.com",
+  "repository": "https://github.com/sky-access/skyaccess-mcp",
+  "license": "MIT",
+  "keywords": [
+    "skyaccess",
+    "private jet",
+    "empty leg",
+    "empty legs",
+    "jet charter",
+    "private charter",
+    "charter flight"
+  ]
+}
