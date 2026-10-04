@@ -1,7 +1,8 @@
 {
   "name": "skyaccess-mcp",
+  "mcpName": "com.skyaccess/skyaccess",
   "version": "1.0.0",
-  "description": "Add the SkyAccess private jet charter MCP server to Claude, Cursor, or any MCP client with one command.",
+  "description": "Hosted SkyAccess MCP server for private jet empty legs: installer for Claude, Cursor and other MCP clients, plus a stdio bridge.",
   "license": "MIT",
   "author": "SkyAccess Inc.",
   "type": "module",
