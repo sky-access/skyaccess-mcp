@@ -79,7 +79,7 @@ Any client that supports remote MCP servers over Streamable HTTP can use the end
   { "servers": { "skyaccess": { "type": "http", "url": "https://mcp.skyaccess.com/mcp" } } }
   ```
 
-- **Clients that only speak stdio** (for example Claude Desktop's `claude_desktop_config.json` file): use the bridge in this repository. See [Local installer and stdio bridge](#local-installer-and-stdio-bridge-npm-package-coming-soon).
+- **Clients that only speak stdio** (for example Claude Desktop's `claude_desktop_config.json` file): use the bridge in this repository. See [Local installer and stdio bridge](#local-installer-and-stdio-bridge-npm-package).
 
 ## Try it with curl
 
@@ -155,50 +155,36 @@ Over a limit, the server answers HTTP `429` with JSON-RPC error code `-32029`. T
 | "No published empty leg flight matches that id." | The flight is no longer published (booked, withdrawn or departed), or the id is wrong. Run `search_empty_legs` again. |
 | `get_charter_estimate` answers "Estimate temporarily unavailable. Please try again." | The same message is returned when a place name is not recognised. Retry with a major city name or an airport code such as `KTEB`. |
 
-## Local installer and stdio bridge (npm package coming soon)
+## Local installer and stdio bridge (npm package)
 
-The `skyaccess-mcp` npm package is not published yet, so `npx skyaccess-mcp` does not work today. Use the hosted endpoint above. Once published, the package will:
+The [`skyaccess-mcp`](https://www.npmjs.com/package/skyaccess-mcp) npm package does two things. It needs Node 20 or later and has no runtime dependencies.
 
-1. Write the SkyAccess entry into the config of supported MCP clients found on the machine (Cursor and the Claude Desktop config file), so nobody has to hand-edit JSON.
-2. Provide a stdio to HTTP bridge for clients that cannot take a URL.
-
-### Run it from a clone today
-
-The connectivity check and the bridge already work from a clone of this repository. They need Node 20 or later and no dependencies:
+1. It writes the SkyAccess entry into the config of supported MCP clients found on the machine (Cursor and the Claude Desktop config file), so nobody has to hand-edit JSON.
+2. It provides a stdio to HTTP bridge for clients that cannot take a URL.
 
 ```bash
-git clone https://github.com/sky-access/skyaccess-mcp.git
-cd skyaccess-mcp
-node bin/skyaccess-mcp.mjs doctor
+npx -y skyaccess-mcp              # register with every supported client found on this machine
+npx -y skyaccess-mcp --dry-run    # show what would be written, write nothing
+npx -y skyaccess-mcp doctor       # check the endpoint and list its tools
+npx -y skyaccess-mcp bridge       # the stdio to HTTP bridge (clients spawn this)
 ```
 
 `doctor` checks the endpoint and lists its tools. It exits non-zero if the endpoint is unreachable or returns no tools.
 
-To use the bridge with a stdio-only client such as Claude Desktop's `claude_desktop_config.json`, point it at the absolute path of your clone:
+To use the bridge by hand with a stdio-only client such as Claude Desktop's `claude_desktop_config.json`:
 
 ```json
 {
   "mcpServers": {
     "skyaccess": {
-      "command": "node",
-      "args": ["/absolute/path/to/skyaccess-mcp/bin/skyaccess-mcp.mjs", "bridge"]
+      "command": "npx",
+      "args": ["-y", "skyaccess-mcp", "bridge"]
     }
   }
 }
 ```
 
-Do not run the installer itself (`node bin/skyaccess-mcp.mjs` with no command) from a clone yet. The Claude Desktop entry it writes starts the bridge through `npx -y skyaccess-mcp`, which fails until the package is published.
-
-### Commands once the package is published
-
-These are not available yet:
-
-```bash
-npx skyaccess-mcp              # register with every supported client found on this machine
-npx skyaccess-mcp --dry-run    # show what would be written, write nothing
-npx skyaccess-mcp doctor       # check the endpoint and list its tools
-npx skyaccess-mcp bridge       # the stdio to HTTP bridge (clients spawn this)
-```
+The same commands work from a clone of this repository with `node bin/skyaccess-mcp.mjs <command>`.
 
 Options: `--url <url>`, `--client <cursor|claude-desktop>`, `--dry-run`, `--help`.
 
