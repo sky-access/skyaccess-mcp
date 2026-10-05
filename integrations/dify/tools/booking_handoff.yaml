@@ -1,0 +1,22 @@
+identity:
+  name: booking_handoff
+  author: skyaccess
+  label:
+    en_US: Get Booking Link
+description:
+  human:
+    en_US: Get the SkyAccess booking page link for an empty leg flight, to hand to a traveller.
+  llm: Return the SkyAccess booking page link for a specific empty leg flight so the traveller can review and book it themselves. Read-only. It does not create, hold, modify or cancel any booking, sends no customer details to SkyAccess, and no booking exists until the traveller completes it on the SkyAccess page.
+parameters:
+  - name: flight_id
+    type: string
+    required: true
+    form: llm
+    label:
+      en_US: Flight ID
+    human_description:
+      en_US: The SkyAccess empty leg flight id from a search result.
+    llm_description: The SkyAccess empty leg flight id, as given in the flightId field of a flight listing.
+extra:
+  python:
+    source: tools/booking_handoff.py

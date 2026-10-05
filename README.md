@@ -46,6 +46,41 @@ Each option below adds the hosted endpoint to your client. Nothing runs on your 
 
 - **Claude (claude.ai and Claude Desktop), Cursor and other clients:** see [Connect from an MCP client](#connect-from-an-mcp-client).
 
+### Other clients
+
+This repository also ships a package for each client below. Each one points at the same hosted endpoint and runs nothing on your machine.
+
+#### Kiro
+
+In the Powers panel choose **Add Custom Power**, then **Import power from GitHub**, and enter `https://github.com/sky-access/skyaccess-mcp`. The power in [`powers/skyaccess`](powers/skyaccess) adds the server and a skill that tells the Kiro agent when to use each tool.
+
+#### Gemini CLI
+
+```bash
+gemini extensions install https://github.com/sky-access/skyaccess-mcp
+```
+
+The extension is defined in `gemini-extension.json` and `GEMINI.md`.
+
+#### Google Antigravity
+
+Add the server to `~/.gemini/config/mcp_config.json`, or to `.agents/mcp_config.json` in a workspace. Antigravity reads `serverUrl`, not `url`:
+
+```json
+{ "mcpServers": { "skyaccess": { "serverUrl": "https://mcp.skyaccess.com/mcp" } } }
+```
+
+Or install the plugin folder from a clone of this repository with `/plugin install <path-to-clone>/integrations/antigravity/skyaccess`. See [`integrations/antigravity/skyaccess`](integrations/antigravity/skyaccess).
+
+#### GitHub Copilot CLI
+
+```bash
+copilot plugin marketplace add sky-access/skyaccess-mcp
+copilot plugin install skyaccess@skyaccess
+```
+
+This installs [`plugins/skyaccess`](plugins/skyaccess), which carries an [Agent Plugins](https://agent-plugins.org) `plugin.json` and `mcp.json` for Copilot next to the Claude Code manifests.
+
 ## Connection details
 
 | | |
@@ -223,8 +258,12 @@ These files point each client at the hosted endpoint. None of them runs code.
 | `gemini-extension.json`, `GEMINI.md` | Gemini CLI extension (`gemini extensions install`) and the Gemini CLI extensions gallery |
 | `.claude-plugin/marketplace.json` | Claude Code plugin marketplace (`claude plugin marketplace add sky-access/skyaccess-mcp`) |
 | `plugins/skyaccess/` | The Claude Code plugin itself: `.claude-plugin/plugin.json`, `.mcp.json`, the `empty-legs` skill and its README |
+| `plugins/skyaccess/plugin.json`, `plugins/skyaccess/mcp.json` | The same plugin in the [Agent Plugins](https://agent-plugins.org) 1.0.0 format, for GitHub Copilot CLI, VS Code and the Awesome Copilot marketplace |
+| `powers/skyaccess/` | Kiro power in the Agent Plugins format: `plugin.json`, `mcp.json`, the `empty-legs` skill and its README |
+| `integrations/antigravity/skyaccess/` | Google Antigravity plugin: `plugin.json` (name and description only) and `mcp_config.json` (`serverUrl`) |
+| `integrations/dify/` | Source of the Dify tool plugin for the Dify Marketplace: the four read-only tools, packaged as a `.difypkg` |
 
-When the server version changes, bump `version` in `gemini-extension.json` and in `plugins/skyaccess/.claude-plugin/plugin.json` together. Check the Claude Code files with `claude plugin validate .` and `claude plugin validate ./plugins/skyaccess`, and the Gemini extension with `gemini extensions validate .`.
+When the server version changes, bump `version` in `gemini-extension.json`, `plugins/skyaccess/.claude-plugin/plugin.json`, `plugins/skyaccess/plugin.json` and `powers/skyaccess/plugin.json` together. The Antigravity manifest has no version field. The Dify plugin has its own version in `integrations/dify/manifest.yaml`. Check the Claude Code files with `claude plugin validate .` and `claude plugin validate ./plugins/skyaccess`, and the Gemini extension with `gemini extensions validate .`.
 
 ## License
 

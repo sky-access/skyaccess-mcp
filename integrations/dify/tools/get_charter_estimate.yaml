@@ -1,0 +1,72 @@
+identity:
+  name: get_charter_estimate
+  author: skyaccess
+  label:
+    en_US: Get Charter Estimate
+description:
+  human:
+    en_US: Get an indicative private charter price range for a route, optionally by aircraft category and passenger count.
+  llm: Returns an indicative price range (minimum and maximum USD) for a private charter flight between two locations. Optionally filter by aircraft category and passenger count. When no category is given, returns estimates for each aircraft category that suits the route and group size.
+parameters:
+  - name: origin
+    type: string
+    required: true
+    form: llm
+    label:
+      en_US: Origin
+    human_description:
+      en_US: Departure city or airport code, for example Los Angeles or KLAX.
+    llm_description: Departure city or airport code (for example "Los Angeles" or "KLAX").
+  - name: destination
+    type: string
+    required: true
+    form: llm
+    label:
+      en_US: Destination
+    human_description:
+      en_US: Arrival city or airport code, for example New York or KJFK.
+    llm_description: Arrival city or airport code (for example "New York" or "KJFK").
+  - name: passengers
+    type: number
+    required: false
+    form: llm
+    min: 1
+    label:
+      en_US: Passengers
+    human_description:
+      en_US: Number of passengers, used to filter suitable aircraft.
+    llm_description: Number of passengers (whole number, at least 1), used to filter suitable aircraft.
+  - name: aircraft_category
+    type: select
+    required: false
+    form: llm
+    label:
+      en_US: Aircraft category
+    human_description:
+      en_US: Preferred aircraft category. Leave empty to get estimates for every suitable category.
+    llm_description: Preferred aircraft category. One of TURBOPROP, VERY_LIGHT_JET, LIGHT_JET, MID_SIZE_JET, SUPER_MID_SIZE_JET, HEAVY_JET, ULTRA_LONG_RANGE. Omit to get estimates for all suitable categories.
+    options:
+      - value: TURBOPROP
+        label:
+          en_US: Turboprop
+      - value: VERY_LIGHT_JET
+        label:
+          en_US: Very light jet
+      - value: LIGHT_JET
+        label:
+          en_US: Light jet
+      - value: MID_SIZE_JET
+        label:
+          en_US: Midsize jet
+      - value: SUPER_MID_SIZE_JET
+        label:
+          en_US: Super midsize jet
+      - value: HEAVY_JET
+        label:
+          en_US: Heavy jet
+      - value: ULTRA_LONG_RANGE
+        label:
+          en_US: Ultra long range
+extra:
+  python:
+    source: tools/get_charter_estimate.py
