@@ -1,0 +1,22 @@
+identity:
+  name: get_flight
+  author: skyaccess
+  label:
+    en_US: Get Flight
+description:
+  human:
+    en_US: Look up one SkyAccess empty leg flight by its flight id.
+  llm: Look up one SkyAccess empty leg flight by its flight id (the flightId field from a search result) and return its route, departure time, whole-aircraft price in USD, aircraft type, available seats, amenities and a booking link, as currently published. Returns a not-available message if the flight is no longer published.
+parameters:
+  - name: flight_id
+    type: string
+    required: true
+    form: llm
+    label:
+      en_US: Flight ID
+    human_description:
+      en_US: The SkyAccess empty leg flight id from a search result.
+    llm_description: The SkyAccess empty leg flight id, as given in the flightId field of a flight listing.
+extra:
+  python:
+    source: tools/get_flight.py

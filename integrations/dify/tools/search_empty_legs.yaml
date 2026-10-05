@@ -1,0 +1,68 @@
+identity:
+  name: search_empty_legs
+  author: skyaccess
+  label:
+    en_US: Search Empty Legs
+description:
+  human:
+    en_US: Search live private jet empty leg flights on SkyAccess by origin, destination, date range, passenger count and an optional price ceiling.
+  llm: Search available private jet empty leg flights on SkyAccess. Filter by origin and destination (city name or airport code), an ISO departure date range, passenger count and an optional max_price ceiling in USD. Returns up to 5 matching flights with route, departure time, whole-aircraft price in USD (taxes and fees are shown separately on SkyAccess before booking), aircraft type, available seats, a flight id and a booking link. A flight with a null price has no published price and should be described as "Contact for price". Use get_flight or booking_handoff with the returned flight id for details or a booking link.
+parameters:
+  - name: origin
+    type: string
+    required: false
+    form: llm
+    label:
+      en_US: Origin
+    human_description:
+      en_US: Departure city or airport code, for example Los Angeles or LAX.
+    llm_description: Departure city or airport code (for example "Los Angeles" or "LAX").
+  - name: destination
+    type: string
+    required: false
+    form: llm
+    label:
+      en_US: Destination
+    human_description:
+      en_US: Arrival city or airport code, for example Las Vegas or KLAS.
+    llm_description: Arrival city or airport code (for example "Las Vegas" or "KLAS").
+  - name: departure_date_from
+    type: string
+    required: false
+    form: llm
+    label:
+      en_US: Earliest departure date
+    human_description:
+      en_US: Earliest departure date in ISO format, for example 2026-11-10.
+    llm_description: Earliest departure date in ISO format (YYYY-MM-DD).
+  - name: departure_date_to
+    type: string
+    required: false
+    form: llm
+    label:
+      en_US: Latest departure date
+    human_description:
+      en_US: Latest departure date in ISO format, for example 2026-11-20.
+    llm_description: Latest departure date in ISO format (YYYY-MM-DD).
+  - name: passengers
+    type: number
+    required: false
+    form: llm
+    min: 1
+    label:
+      en_US: Passengers
+    human_description:
+      en_US: Number of passengers.
+    llm_description: Number of passengers (whole number, at least 1).
+  - name: max_price
+    type: number
+    required: false
+    form: llm
+    label:
+      en_US: Maximum price (USD)
+    human_description:
+      en_US: Optional whole-aircraft price ceiling in USD. Flights with no published price are still included.
+    llm_description: Optional whole-aircraft price ceiling in USD. Flights priced above it are excluded; flights with no published price (price null) are still included because their price is unknown.
+extra:
+  python:
+    source: tools/search_empty_legs.py

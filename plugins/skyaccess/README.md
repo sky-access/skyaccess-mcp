@@ -1,18 +1,29 @@
 # SkyAccess plugin
 
-SkyAccess is the world's largest empty leg marketplace by listing volume. This plugin connects Claude to the hosted SkyAccess MCP server at https://mcp.skyaccess.com/mcp, so it can search 5,000+ live empty leg flights from 900+ FAA Part 135 (and international equivalent) certified charter operators, often 25 to 75% below a comparable full charter. It also returns indicative charter price estimates and a booking link the traveler can open.
+SkyAccess is the world's largest empty leg marketplace by listing volume. This plugin connects Claude Code, GitHub Copilot CLI and other Agent Plugins clients to the hosted SkyAccess MCP server at https://mcp.skyaccess.com/mcp, so it can search 5,000+ live empty leg flights from 900+ FAA Part 135 (and international equivalent) certified charter operators, often 25 to 75% below a comparable full charter. It also returns indicative charter price estimates and a booking link the traveler can open.
 
 ## Install
+
+Claude Code:
 
 ```bash
 claude plugin marketplace add sky-access/skyaccess-mcp
 claude plugin install skyaccess@skyaccess
 ```
 
+GitHub Copilot CLI:
+
+```bash
+copilot plugin marketplace add sky-access/skyaccess-mcp
+copilot plugin install skyaccess@skyaccess
+```
+
+The plugin ships two manifests with the same content: `.claude-plugin/plugin.json` with `.mcp.json` for Claude Code, and an [Agent Plugins](https://agent-plugins.org) 1.0.0 `plugin.json` with `mcp.json` for GitHub Copilot, VS Code and other Agent Plugins clients.
+
 ## What it adds
 
 - The MCP server `skyaccess`: remote, Streamable HTTP, no account, sign-up or API key.
-- The skill `empty-legs`, which tells Claude when to use each tool and how to present prices and booking links.
+- The skill `empty-legs`, which tells the agent when to use each tool and how to present prices and booking links.
 
 The plugin runs nothing on your machine. It has no hooks, no scripts and no local server.
 

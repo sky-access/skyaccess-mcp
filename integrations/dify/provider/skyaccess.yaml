@@ -1,0 +1,19 @@
+identity:
+  author: skyaccess
+  name: skyaccess
+  label:
+    en_US: SkyAccess
+  description:
+    en_US: Search 5,000+ live empty leg flights, get charter price estimates and booking links. No account or API key.
+  icon: icon.png
+  tags:
+    - travel
+    - search
+tools:
+  - tools/search_empty_legs.yaml
+  - tools/get_flight.yaml
+  - tools/booking_handoff.yaml
+  - tools/get_charter_estimate.yaml
+extra:
+  python:
+    source: provider/skyaccess.py

@@ -1,0 +1,5 @@
+{
+  "$schema": "https://antigravity.google/schemas/v1/plugin.json",
+  "name": "skyaccess",
+  "description": "Search 5,000+ live empty leg flights, get charter price estimates and booking links. No account or API key."
+}
