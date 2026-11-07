@@ -148,11 +148,12 @@ The server is stateless, so both commands work without an `initialize` handshake
 | `get_flight` | Read-only | Re-reads one flight by `flightId`, or says it is no longer available. |
 | `booking_handoff` | Read-only | Returns the SkyAccess booking page link for a `flightId`. It creates, holds or changes nothing; the traveler reviews and books on the page. |
 | `get_charter_estimate` | Read-only | Returns an indicative USD price range per aircraft category, with flight time, for a charter from `origin` to `destination` (optional `passengers` and `aircraftCategory`). |
+| `list_routes` | Read-only | Lists popular routes, each with `origin`, `destination` and `minPrice`: the lowest whole-aircraft empty leg price currently listed on the route, in USD, or `null` when no flight on the route has a listed price. Takes no arguments. The list is a curated catalogue served from a cache refreshed about every 30 minutes, not a live ranking. |
 | `request_booking` | **Write** | Sends the traveler's name, email and trip details (`origin`, `destination`, `departureDate`, `passengers`, optional `notes`) to SkyAccess. A SkyAccess specialist follows up by email shortly to confirm availability and price. It takes no payment and creates no booking. |
 
 A flight with `price: null` has no published price (SkyAccess shows it as "Contact for price"). Such flights can appear even when `max_price` is set, because their price is unknown.
 
-Every tool carries MCP annotations: the four read-only tools set `readOnlyHint: true`, and `request_booking` sets `readOnlyHint: false`.
+Every tool carries MCP annotations: the five read-only tools set `readOnlyHint: true`, and `request_booking` sets `readOnlyHint: false` and `destructiveHint: true`.
 
 ## Example prompts
 
@@ -167,7 +168,7 @@ Inventory changes all the time, so the flights returned differ from run to run.
 
 ## Data and privacy
 
-The four read-only tools need no personal data. `request_booking` is the only tool that sends personal data: the name and email the traveler gives, plus the trip details and any notes, go to SkyAccess so a specialist can reply. Call it only when the traveler asks SkyAccess to contact them.
+The five read-only tools need no personal data. `request_booking` is the only tool that sends personal data: the name and email the traveler gives, plus the trip details and any notes, go to SkyAccess so a specialist can reply. Call it only when the traveler asks SkyAccess to contact them.
 
 How SkyAccess handles this data: https://skyaccess.com/privacy#connector
 
