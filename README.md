@@ -2,7 +2,7 @@
 
 # SkyAccess MCP server
 
-[![MCP Badge](https://lobehub.com/badge/mcp/sky-access-skyaccess-mcp)](https://lobehub.com/mcp/sky-access-skyaccess-mcp)
+[![MCP Badge](https://lobehub.com/badge/mcp/sky-access-skyaccess-mcp)](https://lobehub.com/mcp/sky-access-skyaccess-mcp) [![Listed on Skillselion](https://skillselion.com/badge/mcp/tool/com.skyaccess/skyaccess.svg)](https://skillselion.com/mcp/tool/com.skyaccess/skyaccess)
 
 SkyAccess is the world's largest empty leg marketplace by listing volume. This free, public MCP server lets any AI assistant search 5,000+ live empty leg flights from 900+ FAA Part 135 (and international equivalent) certified charter operators, often 25 to 75% below a comparable full charter. It also returns indicative charter price estimates and a booking link the traveler can open.
 
