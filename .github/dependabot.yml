@@ -1,0 +1,29 @@
+# Dependabot version updates for skyaccess-mcp (SKY-8522).
+#
+# Security updates are a separate, account-side switch and are already on for
+# this repo. This file adds the weekly version lane, so a stale pin is raised
+# before it becomes an advisory.
+#
+# Two ecosystems, because that is all this repo ships:
+#   - npm at the root: the published `skyaccess-mcp` package (dev dependency only).
+#   - pip under integrations/dify: the Dify plugin's two exact pins.
+# No github-actions lane: this repo has no workflows.
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+    open-pull-requests-limit: 3
+    commit-message:
+      prefix: chore(deps)
+
+  - package-ecosystem: pip
+    directory: /integrations/dify
+    schedule:
+      interval: weekly
+      day: monday
+    open-pull-requests-limit: 3
+    commit-message:
+      prefix: chore(deps)
